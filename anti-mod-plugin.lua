@@ -1,3 +1,4 @@
+-- serverhop not mine
 local AllIDs = {}
 local foundAnything = ""
 local actualHour = os.date("!*t").hour
