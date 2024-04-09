@@ -1,11 +1,39 @@
+local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/,./"][\\-=_|]{}='
+
+local function EncodeJit(data)
+    return ((data:gsub('.', function(x) 
+        local r,b='',x:byte()
+        for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
+        return r;
+    end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+        if (#x < 6) then return '' end
+        local c=0
+        for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
+        return b:sub(c+1,c+1)
+    end)..({ '', '==', '=' })[#data%3+1])
+end
+local function DecodeJit(data)
+    data = string.gsub(data, '[^'..b..'=]', '')
+    return (data:gsub('.', function(x)
+        if (x == '=') then return '' end
+        local r,f='',(b:find(x)-1)
+        for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
+        return r;
+    end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
+        if (#x ~= 8) then return '' end
+        local c=0
+        for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
+            return string.char(c)
+    end))
+end
 if AscentPluginService and AscentPluginService.NewPlugin then
     local Plugin = AscentPluginService.NewPlugin()
     local Logic = Plugin.RequestAccess().AscentLogic
     
     local cfgdata = "new.ascfg"
     
-    local function dump_logic()
-        local String = "return {"
+    local function dump_logic(name)
+        local String = "return {CFGName = '"..name.."';\n"
         for i,v in pairs(Logic) do
             if typeof(v) == 'table' then
                 String =    String..'["'..i..'"] = {\n' -- table
@@ -75,6 +103,13 @@ if AscentPluginService and AscentPluginService.NewPlugin then
 
         match_table(Logic, _cfg)
     end
+    local function load_cfg_table(table)
+        if not isfolder('ascent-cfg') then
+            makefolder('ascent-cfg')
+        end
+
+        match_table(Logic, table)
+    end
     local function get_configs()
         local res = {}
         for i,v in pairs(listfiles('ascent-cfg')) do
@@ -87,11 +122,15 @@ if AscentPluginService and AscentPluginService.NewPlugin then
         if not isfolder('ascent-cfg') then
             makefolder('ascent-cfg')
         end
-        local cfg = dump_logic()
-        writefile('ascent-cfg/'..name, cfg)
+        local cfg = dump_logic(name)
+        if string.find(name, 'ascent-cfg') then
+            writefile(name, cfg)
+        else
+            writefile('ascent-cfg/'..name, cfg)
+        end
         return cfg
     end
-    
+
     function refreshcfgs()
         if Tab then
             Tab:Destroy()
@@ -109,11 +148,42 @@ if AscentPluginService and AscentPluginService.NewPlugin then
         end)
         Configs.CreateInput('CFG Name', 'Enter your configs name', function(a)
             cfgdata = a
-        end)    
+        end)
+        Configs.CreateInput('Import', '', function(a)
+            local DATA = DecodeJit(a)
+            local ConfigData = loadstring(DATA)()
+            local ConfigName = ConfigData.CFGName;
+            if string.find(ConfigName, 'ascent-cfg') then
+                writefile(ConfigName, DATA)
+            else
+                writefile('ascent-cfg/'..ConfigName, DATA)
+            end
+            
+            refreshcfgs()
+            Logic.ConsoleNotify('Imported config', 1, Color3.fromRGB(72, 255, 0), true)
+        end)
+        Configs.CreateButton('Export', '⚙', function(a)
+            
+            setclipboard(EncodeJit(readfile(cfgdata)))
+            Logic.ConsoleNotify('Exported config', 1, Color3.fromRGB(72, 255, 0), true)
+        end)
+        
         Configs.CreateButton('Save Config', '⚙', function(a)
             save_cfg(cfgdata)
             refreshcfgs()
             Logic.ConsoleNotify('Saved config', 1, Color3.fromRGB(72, 255, 0), true)
+        end)
+        Configs.CreateButton('Delete Config', '⚙', function(a)
+            delfile(cfgdata)
+            refreshcfgs()
+            Logic.ConsoleNotify('Deleted config', 1, Color3.fromRGB(72, 255, 0), true)
+        end)
+        Configs.CreateButton('Delete All Configs', '⚙', function(a)
+            delfolder('ascent-cfg')
+            makefolder('ascent-cfg')
+            save_cfg('Default')
+            refreshcfgs()
+            Logic.ConsoleNotify('Deleted all configs', 1, Color3.fromRGB(72, 255, 0), true)
         end)
         Configs.CreateButton('Refresh', '🔄', function(a)
             refreshcfgs()
