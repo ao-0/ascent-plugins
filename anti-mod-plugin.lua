@@ -1,4 +1,4 @@
--- serverhop not mine
+-- server hop not mine
 local AllIDs = {}
 local foundAnything = ""
 local actualHour = os.date("!*t").hour
@@ -152,8 +152,8 @@ end)
 
 if AscentPluginService and AscentPluginService.NewPlugin then
     local Plugin = AscentPluginService.NewPlugin()
-    local Tab = Plugin.CreateContentSector('Anti Mod')
-    local Logic = Plugin.RequestAccess().AscentLogic
+    local Tab = Plugin.CreateContentSector('Anti Mod');
+    local Logic = Plugin.RequestAccess().AscentLogic;Logic['Anti Mod'].OpenTab()
     local AntiModSec = Tab.Section('Anti Mod', 'left');
     AntiModSec.CreateToggle('Enabled', true, function(a)
         AntiModEnabled = a
