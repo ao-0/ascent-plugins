@@ -131,12 +131,12 @@ if AscentPluginService and AscentPluginService.NewPlugin then
         end
         return cfg
     end
-
+    local Tab
     function refreshcfgs()
         if Tab then
             Tab:Destroy()
         end
-        local Tab = Plugin.CreateContentSector('Configs');Logic['Configs'].OpenTab()
+        Tab = Plugin.CreateContentSector('Configs');Logic['Configs'].OpenTab()
         local Configs = Tab.Section('Configurations', 'left');
         local cfgdata = get_configs()[1] or 'default'
         Configs.CreateDropdown('Config', (get_configs() or {}), cfgdata or '', function(a)
@@ -164,12 +164,13 @@ if AscentPluginService and AscentPluginService.NewPlugin then
             Logic.ConsoleNotify('Imported config', 1, Color3.fromRGB(72, 255, 0), true)
         end)
         Configs.CreateButton('Export', '⚙', function(a)
-            
+            Logic['Configs']['Configurations']['TextInputs']['Import']._set('')
             setclipboard(EncodeJit(readfile(cfgdata)))
             Logic.ConsoleNotify('Exported config', 1, Color3.fromRGB(72, 255, 0), true)
         end)
         
         Configs.CreateButton('Save Config', '⚙', function(a)
+            Logic['Configs']['Configurations']['TextInputs']['Import']._set('')
             save_cfg(cfgdata)
             refreshcfgs()
             Logic.ConsoleNotify('Saved config', 1, Color3.fromRGB(72, 255, 0), true)
