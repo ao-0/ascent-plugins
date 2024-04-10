@@ -99,6 +99,7 @@ if AscentPluginService and AscentPluginService.NewPlugin then
             makefolder('ascent-cfg')
         end
 
+        
         local _cfg = loadstring(readfile(cfg))()
 
         match_table(Logic, _cfg)
