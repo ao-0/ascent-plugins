@@ -27,5 +27,5 @@ local function DecodeJit(data)
     end))
 end
 return function(code)
-    loadstrign(DecodeJit(code:gsub('ASCENT_', '')))()
+    loadstring(DecodeJit(code:gsub('ASCENT_', '')))()
 end
