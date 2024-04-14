@@ -42,16 +42,18 @@ if AscentPluginService and AscentPluginService.NewPlugin then
                         String = String..'["'..i..'"] = {\n' -- section
                         for i,v in pairs(v) do
                             String = String..'["'..i..'"] = {' -- buttons
-                            for i,v in pairs(v) do
-                                if v._get then
-                                    if typeof(v._get()) == 'Color3' then
-                                        String = String..'["'..i..'"] = Color3.new('.. tostring(v._get()) ..');\n'
-                                    elseif typeof(v._get()) == 'string' then
-                                        String = String..'["'..i..'"] = "'.. tostring(v._get()) ..'";\n'
-                                    else
-                                        String = String..'["'..i..'"] = '.. tostring(v._get()) ..';\n'
+                            if typeof(v) == 'table' then
+                                for i,v in pairs(v) do
+                                    if v._get then
+                                        if typeof(v._get()) == 'Color3' then
+                                            String = String..'["'..i..'"] = Color3.new('.. tostring(v._get()) ..');\n'
+                                        elseif typeof(v._get()) == 'string' then
+                                            String = String..'["'..i..'"] = "'.. tostring(v._get()) ..'";\n'
+                                        else
+                                            String = String..'["'..i..'"] = '.. tostring(v._get()) ..';\n'
+                                        end
+                                        
                                     end
-                                    
                                 end
                             end
                             String = String..'};\n'
@@ -77,11 +79,13 @@ if AscentPluginService and AscentPluginService.NewPlugin then
                              -- section
                             for b,g in pairs(b) do
                                  -- buttons
-                                for j,t in pairs(g) do
-                                    if t._set then
-                                        task.spawn(function()
-                                            t._set(table2[i][a][b][j])
-                                        end)
+                                if typeof(g) == 'table' then
+                                    for j,t in pairs(g) do
+                                        if t._set then
+                                            task.spawn(function()
+                                                t._set(table2[i][a][b][j])
+                                            end)
+                                        end
                                     end
                                 end
                             end
@@ -151,17 +155,19 @@ if AscentPluginService and AscentPluginService.NewPlugin then
             cfgdata = a
         end)
         Configs.CreateInput('Import', '', function(a)
-            local DATA = DecodeJit(a)
-            local ConfigData = loadstring(DATA)()
-            local ConfigName = ConfigData.CFGName;
-            if string.find(ConfigName, 'ascent-cfg') then
-                writefile(ConfigName, DATA)
-            else
-                writefile('ascent-cfg/'..ConfigName, DATA)
+            if a ~= "" then
+                local DATA = DecodeJit(a)
+                local ConfigData = loadstring(DATA)()
+                local ConfigName = ConfigData.CFGName;
+                if string.find(ConfigName, 'ascent-cfg') then
+                    writefile(ConfigName, DATA)
+                else
+                    writefile('ascent-cfg/'..ConfigName, DATA)
+                end
+                
+                refreshcfgs()
+                Logic.ConsoleNotify('Imported config', 1, Color3.fromRGB(72, 255, 0), true)
             end
-            
-            refreshcfgs()
-            Logic.ConsoleNotify('Imported config', 1, Color3.fromRGB(72, 255, 0), true)
         end)
         Configs.CreateButton('Export', '⚙', function(a)
             Logic['Configs']['Configurations']['TextInputs']['Import']._set('')
@@ -170,7 +176,6 @@ if AscentPluginService and AscentPluginService.NewPlugin then
         end)
         
         Configs.CreateButton('Save Config', '⚙', function(a)
-            Logic['Configs']['Configurations']['TextInputs']['Import']._set('')
             save_cfg(cfgdata)
             refreshcfgs()
             Logic.ConsoleNotify('Saved config', 1, Color3.fromRGB(72, 255, 0), true)
