@@ -153,7 +153,7 @@ end)
 if AscentPluginService and AscentPluginService.NewPlugin then
     local Plugin = AscentPluginService.NewPlugin()
     local Tab = Plugin.CreateContentSector('Anti Mod');
-    local Logic = Plugin.RequestAccess().AscentLogic;Logic['Anti Mod'].OpenTab()
+    local Logic = Plugin.RequestAccess().AscentLogic
     local AntiModSec = Tab.Section('Anti Mod', 'left');
     AntiModSec.CreateToggle('Enabled', true, function(a)
         AntiModEnabled = a
