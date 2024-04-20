@@ -140,7 +140,7 @@ if AscentPluginService and AscentPluginService.NewPlugin then
         if Tab then
             Tab:Destroy()
         end
-        Tab = Plugin.CreateContentSector('Configs');
+        Tab = Plugin.CreateContentSector('Configs');Logic['Configs'].OpenTab()
         local Configs = Tab.Section('Configurations', 'left');
         local cfgdata = get_configs()[1] or 'default'
         Configs.CreateDropdown('Config', (get_configs() or {}), cfgdata or '', function(a)
